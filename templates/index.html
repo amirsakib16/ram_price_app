@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAM Price Category Predictor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <span class="logo-icon">💾</span>
+        <h1>RAM Price Predictor</h1>
+      </div>
+      <p class="subtitle">Predict whether a RAM module falls into <strong>Budget</strong>, <strong>Mid-Range</strong>, or <strong>Premium</strong> pricing</p>
+    </header>
+
+    <main>
+      <form id="predict-form" class="card">
+        <h2>RAM Specifications</h2>
+
+        <div class="form-grid">
+          <!-- Numerical -->
+          <div class="form-group">
+            <label for="capacity_gb">Capacity (GB)</label>
+            <input type="number" id="capacity_gb" name="capacity_gb" min="1" max="512" step="1" value="16" required>
+          </div>
+
+          <div class="form-group">
+            <label for="bus_speed_mhz">Bus Speed (MHz)</label>
+            <input type="number" id="bus_speed_mhz" name="bus_speed_mhz" min="800" max="8000" step="100" value="3200" required>
+          </div>
+
+          <div class="form-group">
+            <label for="demand_ratio">Demand Ratio</label>
+            <input type="number" id="demand_ratio" name="demand_ratio" min="0.1" max="10" step="0.1" value="1.0" required>
+            <small>Relative market demand (1.0 = average)</small>
+          </div>
+
+          <div class="form-group">
+            <label for="has_discount">Has Discount?</label>
+            <select id="has_discount" name="has_discount">
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+
+          <!-- Categorical -->
+          <div class="form-group">
+            <label for="ram_generation">RAM Generation</label>
+            <select id="ram_generation" name="ram_generation" required>
+              {% for g in generations %}
+              <option value="{{ g }}" {% if g == 'DDR4' %}selected{% endif %}>{{ g }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="condition_clean">Condition</label>
+            <select id="condition_clean" name="condition_clean" required>
+              {% for c in conditions %}
+              <option value="{{ c }}" {% if c == 'Used' %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="unit_type">Unit Type</label>
+            <select id="unit_type" name="unit_type" required>
+              {% for u in unit_types %}
+              <option value="{{ u }}" {% if u == 'Single' %}selected{% endif %}>{{ u }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="brand">Brand</label>
+            <select id="brand" name="brand" required>
+              {% for b in brands %}
+              <option value="{{ b }}" {% if b == 'Kingston' %}selected{% endif %}>{{ b }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <h3>Additional Flags</h3>
+        <div class="flags-grid">
+          <label class="checkbox-label">
+            <input type="checkbox" id="is_ecc" name="is_ecc" value="1">
+            <span>ECC Memory</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="is_sodimm" name="is_sodimm" value="1">
+            <span>SO-DIMM (Laptop)</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="is_gaming" name="is_gaming" value="1">
+            <span>Gaming RAM</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="is_us_listing" name="is_us_listing" value="1" checked>
+            <span>US Listing</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="is_bulk_server" name="is_bulk_server" value="1">
+            <span>Bulk / Server</span>
+          </label>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-primary">
+          <span class="btn-text">Predict Price Category</span>
+          <span class="btn-loader hidden">Predicting...</span>
+        </button>
+      </form>
+
+      <section id="result" class="card result-card hidden">
+        <h2>Prediction Result</h2>
+        <div class="prediction-badge" id="prediction-badge">—</div>
+        <div class="proba-bars" id="proba-bars"></div>
+        <p class="disclaimer">This is a machine-learning estimate based on historical listing patterns. Actual market prices may vary.</p>
+      </section>
+
+      <section id="error" class="card error-card hidden">
+        <p id="error-message"></p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Powered by SVM classifier · Deploy-ready for <a href="https://render.com" target="_blank" rel="noopener">Render</a></p>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
